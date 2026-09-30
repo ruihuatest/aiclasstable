@@ -383,6 +383,15 @@ tr.today-row .empty{
   .status-detail,.next-class{font-size:14px}
 }
 
+
+.status-card.today-class{
+  background:#fff4bf;
+  border-color:#e6ca57;
+}
+.status-card.today-class .status-main{
+  color:#7a5600;
+}
+
 </style>
 </head>
 <body>
@@ -653,7 +662,7 @@ function statusCardHtml(dateStr,label){
   const dateText=`${roc(dateStr)}（${week(dateStr)}）`;
 
   if(summary){
-    return `<div class="status-card class-day">
+    return `<div class="status-card class-day ${label==='今日'?'today-class':''}">
       <div class="status-date">${label}｜${dateText}</div>
       <div class="status-main">${label==='今日'?'今日需上課':'明日需上課'}</div>
       <div class="status-detail">
