@@ -3,19 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>115AI數位行政與電商行銷實務職能訓練班_課表</title>
+<title>115AI數位行政與電商行銷實務職能訓練班-課表</title>
 <style>
 :root{
  --bg:#f5f7f5;--card:#fff;--line:#e1e7e1;--text:#1f2937;--muted:#6b7280;
  --green:#e3f5e6;--green-b:#abd9b3;--gray:#eceff1;--gray-b:#d0d6dc;
- --today:#dff2e2;--blue:#2563eb;--shadow:0 5px 20px rgba(15,23,42,.055)
+ --today:#fff4bf;--blue:#2563eb;--shadow:0 5px 20px rgba(15,23,42,.055)
 }
 *{box-sizing:border-box}html{scroll-behavior:auto}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+html,body{min-height:100%;}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 .app{max-width:1500px;margin:auto;padding:14px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.tab{border:1px solid var(--line);background:#eef2ee;color:#667085;border-radius:18px;padding:15px 12px;font-size:clamp(18px,2vw,24px);font-weight:900;cursor:pointer}
-.tab.active{background:#fff;color:var(--blue);box-shadow:var(--shadow)}
 .page{display:none}.page.active{display:block}
 .topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:0 2px 10px}
 .today-label{font-size:15px;font-weight:850}
@@ -45,19 +42,81 @@ tr.today-row td{background:var(--today)}
 .row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}.row strong{font-size:15px}.row span{font-size:13px;color:var(--muted);text-align:right}
 @media(max-width:920px){.app{padding:10px}.table-wrap{display:none}.mobile{display:block}.stats{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.tab{font-size:19px;padding:13px 8px}.stat{padding:13px}.stat .num{font-size:25px}}
+
+
+/* 右下角懸浮快捷鍵 */
+.floating-actions{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+.float-btn{
+  width:68px;
+  height:68px;
+  border-radius:50%;
+  border:0;
+  color:#fff;
+  font-weight:900;
+  line-height:1.18;
+  cursor:pointer;
+  box-shadow:0 14px 34px rgba(15,23,42,.22);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:7px;
+  animation:floatBounce 1.9s ease-in-out infinite;
+  user-select:none;
+}
+.float-btn.today-btn{
+  background:linear-gradient(135deg,#e7a900,#c98300);
+  animation-delay:.25s;
+}
+.float-btn.switch-btn{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+}
+.float-btn:active{transform:scale(.95)}
+.float-btn:focus-visible{outline:3px solid rgba(37,99,235,.25);outline-offset:3px}
+@keyframes floatBounce{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-7px) scale(1.035)}
+}
+@media(max-width:520px){
+  .floating-actions{right:13px;bottom:13px;gap:8px}
+  .float-btn{width:62px;height:62px;font-size:12px}
+}
+
+
+/* 今天課程：黃色底色，覆蓋原本未完成綠色 / 已完成灰色 */
+tr.today-row td{background:#fff4bf!important}
+tr.today-row .course,
+tr.today-row .course.done{
+  background:#fff4bf!important;
+  border-color:#e6ca57!important;
+}
+tr.today-row .empty{
+  background:#fff9dc!important;
+  border-color:#eadb91!important;
+}
+.day.today{background:#fff4bf!important}
+.day.today .m-course,
+.day.today .m-course.done{
+  background:#fff4bf!important;
+  border-color:#e6ca57!important;
+}
+
 </style>
 </head>
 <body>
 <div class="app">
-<nav class="tabs">
- <button class="tab active" data-page="schedulePage">課表</button>
- <button class="tab" data-page="statsPage">平日空檔統計</button>
-</nav>
-
 <section id="schedulePage" class="page active">
  <div class="topline">
   <div id="todayLabel" class="today-label"></div>
-  <div class="legend"><span><i class="dot g"></i>未完成</span><span><i class="dot x"></i>已完成</span></div>
  </div>
  <div class="panel table-wrap" id="desktopWrap">
   <table><thead><tr id="head"><th>日期</th></tr></thead><tbody id="body"></tbody></table>
@@ -68,7 +127,7 @@ tr.today-row td{background:var(--today)}
 <section id="statsPage" class="page">
  <div class="stats" id="stats"></div>
  <div class="block">
-  <h2>平日不用上課</h2>
+  <h2>空課</h2>
   <div class="notice"><strong>補課異動：</strong>115/09/18 原定「資通訊科技與資訊安全導論」移至 115/11/02 補課。115/09/24 維持原課程「新媒體社群經營與短影音概論」，沒有異動。</div>
   <div id="freeList"></div>
   <div class="row"><strong>115/09/14（一）</strong><span>第5～7節無課，14:00 後不用上課</span></div>
@@ -76,8 +135,14 @@ tr.today-row td{background:var(--today)}
 </section>
 </div>
 
+
+<div class="floating-actions" id="floatingActions">
+  <button class="float-btn today-btn" id="todayCourseBtn" type="button" aria-label="快速移到今天課程">今天<br>課程</button>
+  <button class="float-btn switch-btn" id="switchPageBtn" type="button" aria-label="切換空課">切換<br>空課</button>
+</div>
+
 <script>
-const DATA={"periods": [{"n": 1, "start": "09:10", "end": "10:00"}, {"n": 2, "start": "10:10", "end": "11:00"}, {"n": 3, "start": "11:10", "end": "12:00"}, {"n": 4, "start": "13:10", "end": "14:00"}, {"n": 5, "start": "14:10", "end": "15:00"}, {"n": 6, "start": "15:10", "end": "16:00"}, {"n": 7, "start": "16:10", "end": "17:00"}], "courses": {"gender": {"name": "性別平等工作法", "teacher": "蔡松萍"}, "admin": {"name": "行政宣導與教務管理", "teacher": "周瑋"}, "infosec": {"name": "資通訊科技與資訊安全導論", "teacher": "梁芸姬"}, "ethics": {"name": "職業道德與職場工作倫理", "teacher": "鄭惠文"}, "job": {"name": "就業市場趨勢分析與求職技巧", "teacher": "鄭惠文"}, "social": {"name": "新媒體社群經營與短影音概論", "teacher": "林子筠"}, "digital": {"name": "數位轉型與AI商務應用概論", "teacher": "江美燕"}, "genai": {"name": "生成式AI運算思維與邏輯", "teacher": "周昌煥"}, "labor": {"name": "勞動法令", "teacher": "周瑋"}, "aippt": {"name": "AI智能簡報設計商務演練", "teacher": "江美燕", "assistant": "施則安"}, "multi": {"name": "AI多模態媒體生成工具應用實務", "teacher": "周昌煥"}, "office": {"name": "商務文書處理與數據分析實務", "teacher": "梁芸姬", "assistant": "施則安"}, "video": {"name": "短影音拍攝剪輯與線上行銷實作", "teacher": "林子筠", "assistant": "施則安"}}, "schedule": [{"date": "2026-09-14", "segments": [{"course": "gender", "start": 1, "end": 3}, {"course": "admin", "start": 4, "end": 4}]}, {"date": "2026-09-15", "segments": [{"course": "infosec", "start": 1, "end": 7}]}, {"date": "2026-09-16", "segments": [{"course": "ethics", "start": 1, "end": 3}, {"course": "job", "start": 4, "end": 7}]}, {"date": "2026-09-17", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-21", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-22", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-23", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-24", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-29", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-30", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-01", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-02", "segments": [{"course": "labor", "start": 1, "end": 7}]}, {"date": "2026-10-05", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-06", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-07", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-08", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-09", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-12", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-13", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-14", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-15", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-19", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-20", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-21", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-23", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-27", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-28", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-29", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-30", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-02", "segments": [{"course": "infosec", "start": 1, "end": 7}], "makeup_from": "2026-09-18"}, {"date": "2026-11-03", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-04", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-05", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-06", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-10", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-11", "segments": [{"course": "multi", "start": 1, "end": 7, "assistant_override": "施則安"}]}, {"date": "2026-11-12", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-13", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-17", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-18", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-19", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-20", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-23", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-24", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-25", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-26", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-27", "segments": [{"course": "video", "start": 1, "end": 7}]}], "weekdays": ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-23", "2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27"], "freeDates": ["2026-09-18", "2026-09-25", "2026-09-28", "2026-10-16", "2026-10-22", "2026-10-26", "2026-11-09", "2026-11-16"], "range": {"start": "2026-09-14", "end": "2026-11-27"}, "verification": {"sourceImages": 9, "sourceClassDays": 47, "finalClassDays": 47, "weekdays": 55, "freeDays": 8, "totalPeriods": 326, "movedFrom": "2026-09-18", "movedTo": "2026-11-02"}};
+const DATA={"periods": [{"n": 1, "start": "09:10", "end": "10:00"}, {"n": 2, "start": "10:10", "end": "11:00"}, {"n": 3, "start": "11:10", "end": "12:00"}, {"n": 4, "start": "13:10", "end": "14:00"}, {"n": 5, "start": "14:10", "end": "15:00"}, {"n": 6, "start": "15:10", "end": "16:00"}, {"n": 7, "start": "16:10", "end": "17:00"}], "courses": {"gender": {"name": "性別平等工作法", "teacher": "蔡松萍"}, "admin": {"name": "行政宣導與教務管理", "teacher": "周瑋"}, "infosec": {"name": "資通訊科技與資訊安全導論", "teacher": "梁芸媗"}, "ethics": {"name": "職業道德與職場工作倫理", "teacher": "鄭惠文"}, "job": {"name": "就業市場趨勢分析與求職技巧", "teacher": "鄭惠文"}, "social": {"name": "新媒體社群經營與短影音概論", "teacher": "林子筠"}, "digital": {"name": "數位轉型與AI商務應用概論", "teacher": "江美燕"}, "genai": {"name": "生成式AI運算思維與邏輯", "teacher": "周昌熯"}, "labor": {"name": "勞動法令", "teacher": "周瑋"}, "aippt": {"name": "AI智能簡報設計商務演練", "teacher": "江美燕", "assistant": "施則安"}, "multi": {"name": "AI多模態媒體生成工具應用實務", "teacher": "周昌熯"}, "office": {"name": "商務文書處理與數據分析實務", "teacher": "梁芸媗", "assistant": "施則安"}, "video": {"name": "短影音拍攝剪輯與線上行銷實作", "teacher": "林子筠", "assistant": "施則安"}}, "schedule": [{"date": "2026-09-14", "segments": [{"course": "gender", "start": 1, "end": 3}, {"course": "admin", "start": 4, "end": 4}]}, {"date": "2026-09-15", "segments": [{"course": "infosec", "start": 1, "end": 7}]}, {"date": "2026-09-16", "segments": [{"course": "ethics", "start": 1, "end": 3}, {"course": "job", "start": 4, "end": 7}]}, {"date": "2026-09-17", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-21", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-22", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-23", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-24", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-29", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-30", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-01", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-02", "segments": [{"course": "labor", "start": 1, "end": 7}]}, {"date": "2026-10-05", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-06", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-07", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-08", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-09", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-12", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-13", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-14", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-15", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-19", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-20", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-21", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-23", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-27", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-28", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-29", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-30", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-02", "segments": [{"course": "infosec", "start": 1, "end": 7}], "makeup_from": "2026-09-18"}, {"date": "2026-11-03", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-04", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-05", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-06", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-10", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-11", "segments": [{"course": "multi", "start": 1, "end": 7, "assistant_override": "施則安"}]}, {"date": "2026-11-12", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-13", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-17", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-18", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-19", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-20", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-23", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-24", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-25", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-26", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-27", "segments": [{"course": "video", "start": 1, "end": 7}]}], "weekdays": ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-23", "2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27"], "freeDates": ["2026-09-18", "2026-09-25", "2026-09-28", "2026-10-16", "2026-10-22", "2026-10-26", "2026-11-09", "2026-11-16"], "range": {"start": "2026-09-14", "end": "2026-11-27"}, "verification": {"sourceImages": 9, "sourceClassDays": 47, "finalClassDays": 47, "weekdays": 55, "freeDays": 8, "totalPeriods": 326, "movedFrom": "2026-09-18", "movedTo": "2026-11-02"}};
 const DAY=['日','一','二','三','四','五','六'];
 const MAP=new Map(DATA.schedule.map(x=>[x.date,x]));
 
@@ -166,13 +231,56 @@ function buildStats(){
    return `<div class="row"><strong>${roc(s)}（${week(s).replace('星期','週')}）</strong><span>${text}</span></div>`
  }).join('')
 }
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
- document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
- document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
- b.classList.add('active');document.getElementById(b.dataset.page).classList.add('active');
- if(b.dataset.page==='schedulePage')build()
-});
 buildHead();buildStats();build();
+
+function focusTodayCourse(){
+  const {date:today}=info();
+  const desktopRow=document.querySelector(`#body tr[data-date="${today}"]`);
+  const mobileCard=document.querySelector(`#mobile .day[data-date="${today}"]`);
+
+  if(window.innerWidth<=920){
+    if(mobileCard) mobileCard.scrollIntoView({block:'start',behavior:'smooth'});
+  }else{
+    const wrap=document.getElementById('desktopWrap');
+    if(desktopRow && wrap){
+      wrap.scrollTo({top:Math.max(0,desktopRow.offsetTop-65),behavior:'smooth'});
+    }
+  }
+}
+
+function setPage(target){
+  const schedulePage=document.getElementById('schedulePage');
+  const statsPage=document.getElementById('statsPage');
+  const switchBtn=document.getElementById('switchPageBtn');
+  const todayBtn=document.getElementById('todayCourseBtn');
+
+  const isSchedule=target==='schedulePage';
+  schedulePage.classList.toggle('active',isSchedule);
+  statsPage.classList.toggle('active',!isSchedule);
+
+  if(isSchedule){
+    switchBtn.innerHTML='切換<br>空課';
+    switchBtn.setAttribute('aria-label','切換空課');
+    todayBtn.style.display='flex';
+    build();
+  }else{
+    switchBtn.innerHTML='切換<br>課表';
+    switchBtn.setAttribute('aria-label','切換課表');
+    todayBtn.style.display='none';
+    window.scrollTo({top:0,behavior:'auto'});
+  }
+}
+
+document.getElementById('switchPageBtn').addEventListener('click',()=>{
+  const onSchedule=document.getElementById('schedulePage').classList.contains('active');
+  setPage(onSchedule?'statsPage':'schedulePage');
+});
+
+document.getElementById('todayCourseBtn').addEventListener('click',()=>{
+  focusTodayCourse();
+});
+
+
 </script>
 </body>
 </html>
