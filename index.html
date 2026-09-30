@@ -26,14 +26,14 @@ th{position:sticky;top:0;z-index:3;background:#fafbfa;padding:13px;text-align:le
 td{padding:12px;vertical-align:top;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff}
 th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}
 tr.today-row td{background:var(--today)}
-.date-cell{width:145px;min-width:145px}.date-main{font-size:17px;font-weight:900}.date-sub{font-size:13px;color:var(--muted);margin-top:5px}
+.date-cell{width:145px;min-width:145px}.date-main{font-size:20px;font-weight:900}.date-sub{font-size:15px;color:var(--muted);margin-top:6px;font-weight:700}
 .makeup{display:inline-block;margin-top:7px;padding:4px 8px;border-radius:999px;background:#fff2c7;color:#755400;font-size:11px;font-weight:850}
 .course{min-height:96px;border-radius:14px;padding:12px;background:var(--green);border:1px solid var(--green-b)}
 .course.done{background:var(--gray);border-color:var(--gray-b)}
-.name{font-size:16px;font-weight:900;line-height:1.35}.meta{margin-top:8px;font-size:13px;color:#52606d;line-height:1.55}
+.name{font-size:19px;font-weight:900;line-height:1.4}.meta{margin-top:8px;font-size:13px;color:#52606d;line-height:1.55}
 .empty{min-height:96px;border-radius:14px;border:1px dashed #d6ddd6;background:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:14px}
 .mobile{display:none}.day{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin-bottom:10px}.day.today{background:var(--today)}
-.day-head{display:flex;justify-content:space-between;gap:10px}.day-title{font-size:19px;font-weight:900}.badge{height:max-content;padding:5px 9px;border-radius:999px;background:#eef2ff;color:#3157d5;font-size:12px;font-weight:850;white-space:nowrap}
+.day-head{display:flex;justify-content:space-between;gap:10px}.day-title{font-size:21px;font-weight:900}.badge{height:max-content;padding:5px 9px;border-radius:999px;background:#eef2ff;color:#3157d5;font-size:12px;font-weight:850;white-space:nowrap}
 .m-course{margin-top:10px;border-radius:14px;padding:12px;background:var(--green);border:1px solid var(--green-b)}.m-course.done{background:var(--gray);border-color:var(--gray-b)}
 .free{margin-top:10px;padding:18px;text-align:center;border-radius:14px;border:1px dashed #cfd7cf;background:rgba(255,255,255,.7);color:#667085;font-weight:850}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.stat,.block{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
@@ -55,7 +55,7 @@ tr.today-row td{background:var(--today)}
   align-items:center;
   gap:10px;
 }
-.float-btn{
+.float-btn{font-size:16px;
   width:68px;
   height:68px;
   border-radius:50%;
@@ -110,6 +110,171 @@ tr.today-row .empty{
   border-color:#e6ca57!important;
 }
 
+
+/* 空課頁：只保留依日期分類的清單 */
+.free-only{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.free-group{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.free-group-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px 18px;
+  border-bottom:1px solid var(--line);
+  background:#fafbfa;
+}
+.free-group-head h2{
+  margin:0;
+  font-size:19px;
+}
+.count-badge{
+  min-width:28px;
+  height:28px;
+  padding:0 9px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eef2ff;
+  color:#3157d5;
+  font-size:13px;
+  font-weight:900;
+}
+.free-list{
+  padding:0 18px;
+}
+.free-item{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:15px 0;
+  border-bottom:1px solid var(--line);
+}
+.free-item:last-child{border-bottom:0}
+.free-item-date{
+  font-size:16px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.free-item-note{
+  color:var(--muted);
+  font-size:14px;
+  text-align:right;
+  line-height:1.5;
+}
+.free-item.today-free{
+  background:#fff8d6;
+  margin:0 -18px;
+  padding-left:18px;
+  padding-right:18px;
+}
+.free-empty{
+  padding:24px 0;
+  text-align:center;
+  color:#9ca3af;
+  font-size:14px;
+}
+@media(max-width:600px){
+  .free-item{
+    flex-direction:column;
+    gap:5px;
+  }
+  .free-item-note{text-align:left}
+}
+
+
+.free-today-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:14px 18px;
+  margin-bottom:14px;
+}
+.free-today-label{
+  font-size:14px;
+  color:var(--muted);
+  font-weight:800;
+}
+.free-today-date{
+  font-size:18px;
+  font-weight:950;
+}
+.countdown{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:10px;
+  padding:7px 14px;
+  min-height:34px;
+  border-radius:999px;
+  background:#eef6ff;
+  color:#1d4ed8;
+  font-size:15px;
+  font-weight:950;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:0 2px 8px rgba(29,78,216,.10);
+}
+.countdown.today{
+  background:#fff2b8;
+  color:#7a5600;
+}
+
+
+@media(max-width:600px){
+  .countdown{
+    font-size:15px;
+    padding:7px 13px;
+    min-height:34px;
+    margin-left:6px;
+    margin-top:4px;
+  }
+}
+
+
+.teacher-line{
+  margin-top:10px;
+  font-size:16px;
+  font-weight:800;
+  color:#44505f;
+  line-height:1.5;
+}
+.period-line{
+  margin-top:6px;
+  font-size:16px;
+  font-weight:800;
+  color:#44505f;
+  line-height:1.5;
+}
+.assistant-line{
+  margin-top:4px;
+  font-size:15px;
+  font-weight:700;
+  color:#667085;
+  line-height:1.45;
+}
+@media(max-width:920px){
+  .name{font-size:20px}
+  .teacher-line,.period-line{font-size:17px}
+  .assistant-line{font-size:16px}
+}
+
 </style>
 </head>
 <body>
@@ -124,18 +289,31 @@ tr.today-row .empty{
  <div class="mobile" id="mobile"></div>
 </section>
 
+
 <section id="statsPage" class="page">
- <div class="stats" id="stats"></div>
- <div class="block">
-  <h2>空課</h2>
-  <div class="notice"><strong>補課異動：</strong>115/09/18 原定「資通訊科技與資訊安全導論」移至 115/11/02 補課。</div>
-  <div id="freeList"></div>
-  <div class="row"><strong>115/09/14（一）</strong><span>第5～7節無課，14:00 後不用上課</span></div>
- </div>
+  <div class="free-today-row">
+    <div class="free-today-label">今天日期</div>
+    <div class="free-today-date" id="freeTodayDate"></div>
+  </div>
+  <div class="free-only">
+    <section class="free-group">
+      <div class="free-group-head">
+        <h2>未實現空課</h2>
+        <span id="futureFreeCount" class="count-badge"></span>
+      </div>
+      <div id="futureFreeList" class="free-list"></div>
+    </section>
+
+    <section class="free-group">
+      <div class="free-group-head">
+        <h2>已實現空課</h2>
+        <span id="pastFreeCount" class="count-badge"></span>
+      </div>
+      <div id="pastFreeList" class="free-list"></div>
+    </section>
+  </div>
 </section>
 </div>
-
-
 <div class="floating-actions" id="floatingActions">
   <button class="float-btn today-btn" id="todayCourseBtn" type="button" aria-label="快速移到今天課程">今天<br>課程</button>
   <button class="float-btn switch-btn" id="switchPageBtn" type="button" aria-label="切換空課">切換<br>空課</button>
@@ -189,7 +367,12 @@ function build(){
    const td=document.createElement('td'),seg=segAt(day,p.n);
    if(seg){
     const c=DATA.courses[seg.course],a=assist(seg,c);
-    td.innerHTML=`<div class="course ${status(ds,p.n)==='done'?'done':''}"><div class="name">${c.name}</div><div class="meta">教師：${c.teacher}${a?`<br>助教：${a}`:''}</div></div>`;
+    td.innerHTML=`<div class="course ${status(ds,p.n)==='done'?'done':''}">
+      <div class="name">${c.name}</div>
+      <div class="teacher-line">教師：${c.teacher}</div>
+      ${a?`<div class="assistant-line">助教：${a}</div>`:''}
+      <div class="period-line">第${p.n}節｜${p.start}–${p.end}</div>
+    </div>`;
    }else td.innerHTML='<div class="empty">無課</div>';
    tr.appendChild(td);
   });
@@ -204,7 +387,10 @@ function build(){
    day.segments.forEach(seg=>{
     const c=DATA.courses[seg.course],a=assist(seg,c),b=document.createElement('div');
     b.className='m-course '+(status(ds,seg.end)==='done'?'done':'');
-    b.innerHTML=`<div class="name">${c.name}</div><div class="meta">第${seg.start}${seg.start!==seg.end?'～'+seg.end:''}節｜${DATA.periods[seg.start-1].start}–${DATA.periods[seg.end-1].end}<br>教師：${c.teacher}${a?`<br>助教：${a}`:''}</div>`;
+    b.innerHTML=`<div class="name">${c.name}</div>
+      <div class="teacher-line">教師：${c.teacher}</div>
+      ${a?`<div class="assistant-line">助教：${a}</div>`:''}
+      <div class="period-line">第${seg.start}${seg.start!==seg.end?'～'+seg.end:''}節｜${DATA.periods[seg.start-1].start}–${DATA.periods[seg.end-1].end}</div>`;
     card.appendChild(b)
    })
   }else{
@@ -223,13 +409,86 @@ function build(){
  },40);
 }
 function buildStats(){
- const v=DATA.verification;
- const items=[[v.weekdays,'區間內平日'],[v.finalClassDays,'有課平日'],[v.freeDays,'整天無課平日'],[v.totalPeriods,'總上課節數']];
- document.getElementById('stats').innerHTML=items.map(x=>`<div class="stat"><div class="num">${x[0]}</div><div class="lab">${x[1]}</div></div>`).join('');
- document.getElementById('freeList').innerHTML=DATA.freeDates.map(s=>{
-   const text=s==='2026-09-18'?'原課程已移至 11/02 補課':'09:10–17:00 無課';
-   return `<div class="row"><strong>${roc(s)}（${week(s).replace('星期','週')}）</strong><span>${text}</span></div>`
- }).join('')
+  const {date:today}=info();
+
+  // 空課頁第一列顯示今天日期
+  const freeTodayDate=document.getElementById('freeTodayDate');
+  if(freeTodayDate){
+    freeTodayDate.textContent=`${roc(today)}（${week(today)}）`;
+  }
+
+  // 全日空課 + 9/14 的部分空課
+  const freeItems = DATA.freeDates.map(s=>({
+    date:s,
+    note:s==='2026-09-18'
+      ? '全天空課｜原課程已移至 11/02 補課'
+      : '全天空課｜09:10–17:00'
+  }));
+
+  freeItems.push({
+    date:'2026-09-14',
+    note:'部分空課｜第5～7節無課，14:00 後不用上課'
+  });
+
+  // 計算從今天到目標日期還有幾天（依本地日期，不受時區小時影響）
+  function daysUntil(targetDate){
+    const [ty,tm,td]=today.split('-').map(Number);
+    const [yy,mm,dd]=targetDate.split('-').map(Number);
+    const a=Date.UTC(ty,tm-1,td);
+    const b=Date.UTC(yy,mm-1,dd);
+    return Math.round((b-a)/86400000);
+  }
+
+  // 未實現：今天與未來；依日期由近到遠
+  const futureItems = freeItems
+    .filter(x=>x.date>=today)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  // 已實現：過去日期；最近的過去日期排前面
+  const pastItems = freeItems
+    .filter(x=>x.date<today)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  function renderFutureList(targetId, items){
+    const el=document.getElementById(targetId);
+    if(!items.length){
+      el.innerHTML='<div class="free-empty">目前沒有未實現空課</div>';
+      return;
+    }
+
+    el.innerHTML=items.map(item=>{
+      const diff=daysUntil(item.date);
+      const isToday=diff===0;
+      const countdownText=isToday?'今天':`倒數 ${diff} 天`;
+      return `<div class="free-item ${isToday?'today-free':''}">
+        <div class="free-item-date">
+          ${roc(item.date)}（${week(item.date).replace('星期','週')}）
+          <span class="countdown ${isToday?'today':''}">${countdownText}</span>
+        </div>
+        <div class="free-item-note">${item.note}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderPastList(targetId, items){
+    const el=document.getElementById(targetId);
+    if(!items.length){
+      el.innerHTML='<div class="free-empty">目前沒有已實現空課</div>';
+      return;
+    }
+
+    el.innerHTML=items.map(item=>`
+      <div class="free-item">
+        <div class="free-item-date">${roc(item.date)}（${week(item.date).replace('星期','週')}）</div>
+        <div class="free-item-note">${item.note}</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('futureFreeCount').textContent=futureItems.length;
+  document.getElementById('pastFreeCount').textContent=pastItems.length;
+  renderFutureList('futureFreeList', futureItems);
+  renderPastList('pastFreeList', pastItems);
 }
 buildHead();buildStats();build();
 
@@ -267,6 +526,7 @@ function setPage(target){
     switchBtn.innerHTML='切換<br>課表';
     switchBtn.setAttribute('aria-label','切換課表');
     todayBtn.style.display='none';
+    buildStats();
     window.scrollTo({top:0,behavior:'auto'});
   }
 }
