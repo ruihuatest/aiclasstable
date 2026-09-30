@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>響應式課表</title>
+<style>
+:root{
+  --bg:#f4f7f4;
+  --card:#ffffff;
+  --line:#e3e9e3;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --tab:#eff3ef;
+  --green:#e8f7e8;
+  --green-b:#b9e3b9;
+  --green-strong:#1d6b31;
+  --gray:#f0f2f4;
+  --gray-b:#d5dae1;
+  --gray-strong:#606b78;
+  --today:#dff2df;
+  --shadow:0 8px 24px rgba(16,24,40,.06);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.app{max-width:1480px;margin:0 auto;padding:18px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.tab{
+  border:1px solid var(--line);background:var(--tab);border-radius:22px;padding:18px 16px;
+  font-size:clamp(20px,2vw,28px);font-weight:900;color:#64748b;cursor:pointer
+}
+.tab.active{background:#fff;color:#2563eb;box-shadow:var(--shadow)}
+.page{display:none}
+.page.active{display:block}
+.legend{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);
+  padding:12px 14px;border-radius:16px;box-shadow:var(--shadow);margin-bottom:12px
+}
+.legend .item{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.legend .sw{width:16px;height:16px;border-radius:6px;border:1px solid var(--line)}
+.legend .sw.green{background:var(--green);border-color:var(--green-b)}
+.legend .sw.gray{background:var(--gray);border-color:var(--gray-b)}
+.legend .sw.today{background:var(--today);border-color:var(--green-b)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.table-wrap{overflow:auto;max-height:calc(100vh - 180px)}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:1220px}
+thead th{
+  position:sticky;top:0;background:#fbfcfb;z-index:2;padding:16px 14px;text-align:left;
+  border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:16px
+}
+thead th:last-child{border-right:0}
+tbody td{
+  padding:14px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top;background:#fff
+}
+tbody td:last-child{border-right:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.today-row td{background:var(--today)}
+.date-cell{min-width:150px}
+.date-main{font-size:18px;font-weight:900}
+.date-sub{font-size:14px;color:var(--muted);margin-top:6px}
+.course-card{
+  min-height:102px;border-radius:16px;padding:14px;border:1px solid var(--green-b);background:var(--green)
+}
+.course-card.done{background:var(--gray);border-color:var(--gray-b)}
+.course-name{font-size:18px;font-weight:900;line-height:1.32}
+.course-meta{margin-top:10px;font-size:14px;color:#52606d;line-height:1.5}
+.empty{
+  min-height:102px;border-radius:16px;padding:14px;border:1px dashed #d7ddd7;background:#fff;color:#a1a1aa;
+  display:flex;align-items:center;justify-content:center;font-size:15px
+}
+.mobile-list{display:none;padding:10px}
+.day-card{
+  background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px
+}
+.day-card.today-card{background:var(--today)}
+.day-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.day-title{font-size:20px;font-weight:900}
+.day-sub{font-size:14px;color:var(--muted);margin-top:4px}
+.pill{padding:7px 12px;border-radius:999px;background:#eef2ff;color:#3157d5;font-size:13px;font-weight:800;white-space:nowrap}
+.seg{border-radius:16px;padding:14px;border:1px solid var(--green-b);background:var(--green);margin-top:10px}
+.seg.done{background:var(--gray);border-color:var(--gray-b)}
+.seg-title{font-size:17px;font-weight:900;line-height:1.35}
+.seg-meta{font-size:14px;color:#52606d;margin-top:8px;line-height:1.55}
+.empty-note{
+  margin-top:10px;border-radius:16px;padding:12px 14px;background:#fafafa;border:1px dashed #d8ddd8;color:#6b7280;font-size:14px
+}
+.stats-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px}
+.stat .num{font-size:34px;font-weight:900}
+.stat .label{margin-top:6px;font-size:14px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.block{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px}
+.block h2{margin:0 0 10px;font-size:22px}
+.sub{font-size:14px;color:var(--muted);margin-bottom:10px}
+.list-row{display:flex;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.list-row:last-child{border-bottom:0}
+.list-row strong{font-size:16px}
+.list-row span{font-size:14px;color:var(--muted);text-align:right}
+.timeline-item{padding:12px 0;border-bottom:1px solid var(--line)}
+.timeline-item:last-child{border-bottom:0}
+.timeline-title{font-size:16px;font-weight:900}
+.timeline-text{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.6}
+@media (max-width:960px){
+  .app{padding:12px}
+  .tabs{gap:8px}
+  .tab{font-size:22px;padding:16px 12px}
+  .table-wrap{display:none}
+  .mobile-list{display:block}
+  .stats-wrap{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .stats-wrap{grid-template-columns:1fr 1fr}
+  .legend{padding:10px 12px}
+  .legend .item{font-size:13px}
+  .course-name,.seg-title{font-size:16px}
+  .date-main,.day-title{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tabs">
+    <button class="tab active" data-page="schedulePage">課表</button>
+    <button class="tab" data-page="statsPage">平日空檔統計</button>
+  </div>
+
+  <section id="schedulePage" class="page active">
+    <div class="legend">
+      <div class="item"><span class="sw green"></span>未完成 / 尚未上課</div>
+      <div class="item"><span class="sw gray"></span>已完成</div>
+      <div class="item"><span class="sw today"></span>今天列示底色</div>
+    </div>
+
+    <div class="panel table-wrap" id="desktopWrap">
+      <table>
+        <thead>
+          <tr id="theadRow">
+            <th>日期</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleBody"></tbody>
+      </table>
+    </div>
+
+    <div class="mobile-list" id="mobileList"></div>
+  </section>
+
+  <section id="statsPage" class="page">
+    <div class="stats-wrap" id="statsWrap"></div>
+    <div class="grid">
+      <div class="block">
+        <h2>整天不用上課的平日</h2>
+        <div class="sub">依原始課表整理。11/27 為最後一天上課。</div>
+        <div id="freeList"></div>
+      </div>
+      <div class="block">
+        <h2>補充說明</h2>
+        <div class="timeline-item">
+          <div class="timeline-title">課程時間</div>
+          <div class="timeline-text">第1節 09:10–10:00；第2節 10:10–11:00；第3節 11:10–12:00；午休 12:00–13:00；第4節 13:10–14:00；第5節 14:10–15:00；第6節 15:10–16:00；第7節 16:10–17:00。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-title">部分空堂</div>
+          <div class="timeline-text">115/09/14 第5～7節無課；當天第4節 14:00 結束後即可離開。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-title">衝突檢查</div>
+          <div class="timeline-text">未發現同一天、同一節同時出現兩門課的撞課情況。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-title">最後一天上課</div>
+          <div class="timeline-text">115/11/27（五）第7節，17:00 放學。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const DATA = {"periods": [{"n": 1, "start": "09:10", "end": "10:00"}, {"n": 2, "start": "10:10", "end": "11:00"}, {"n": 3, "start": "11:10", "end": "12:00"}, {"n": 4, "start": "13:10", "end": "14:00"}, {"n": 5, "start": "14:10", "end": "15:00"}, {"n": 6, "start": "15:10", "end": "16:00"}, {"n": 7, "start": "16:10", "end": "17:00"}], "courses": {"gender": {"name": "性別平等工作法", "teacher": "蔡松萍"}, "admin": {"name": "行政宣導與教務管理", "teacher": "周瑋"}, "infosec": {"name": "資通訊科技與資訊安全導論", "teacher": "梁芸姬"}, "ethics": {"name": "職業道德與職場工作倫理", "teacher": "鄭惠文"}, "job": {"name": "就業市場趨勢分析與求職技巧", "teacher": "鄭惠文"}, "social": {"name": "新媒體社群經營與短影音概論", "teacher": "林子筠"}, "digital": {"name": "數位轉型與AI商務應用概論", "teacher": "江美燕"}, "genai": {"name": "生成式AI運算思維與邏輯", "teacher": "周昌煥"}, "labor": {"name": "勞動法令", "teacher": "周瑋"}, "aippt": {"name": "AI智能簡報設計商務演練", "teacher": "江美燕"}, "multi": {"name": "AI多模態媒體生成工具應用實務", "teacher": "周昌煥"}, "office": {"name": "商務文書處理與數據分析實務", "teacher": "梁芸姬"}, "video": {"name": "短影音拍攝剪輯與線上行銷實作", "teacher": "林子筠"}}, "schedule": [{"date": "2026-09-14", "segments": [{"course": "gender", "start": 1, "end": 3}, {"course": "admin", "start": 4, "end": 4}]}, {"date": "2026-09-15", "segments": [{"course": "infosec", "start": 1, "end": 7}]}, {"date": "2026-09-16", "segments": [{"course": "ethics", "start": 1, "end": 3}, {"course": "job", "start": 4, "end": 7}]}, {"date": "2026-09-17", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-18", "segments": [{"course": "infosec", "start": 1, "end": 7}]}, {"date": "2026-09-21", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-22", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-23", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-24", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-29", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-30", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-01", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-02", "segments": [{"course": "labor", "start": 1, "end": 7}]}, {"date": "2026-10-05", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-06", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-07", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-08", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-09", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-12", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-13", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-14", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-15", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-19", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-20", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-21", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-23", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-27", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-28", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-29", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-30", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-03", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-04", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-05", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-06", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-10", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-11", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-11-12", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-13", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-17", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-18", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-19", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-20", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-23", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-24", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-25", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-26", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-27", "segments": [{"course": "video", "start": 1, "end": 7}]}], "freeDates": ["2026-09-25", "2026-09-28", "2026-10-16", "2026-10-22", "2026-10-26", "2026-11-02", "2026-11-09", "2026-11-16"], "range": {"start": "2026-09-14", "end": "2026-11-27"}, "lastClass": "2026-11-27"};
+const dayNames = ['日','一','二','三','四','五','六'];
+
+function formatROC(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getFullYear()-1911}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatWeek(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  return `星期${dayNames[d.getDay()]}`;
+}
+function todayInfo(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  return {now, date:`${y}-${m}-${d}`};
+}
+function compareDate(a,b){
+  if(a < b) return -1;
+  if(a > b) return 1;
+  return 0;
+}
+function periodEndTime(period){
+  return period.end;
+}
+function periodRangeText(start,end){
+  const ps = DATA.periods[start-1].start;
+  const pe = DATA.periods[end-1].end;
+  return `${ps}–${pe}`;
+}
+function segmentFor(day, n){
+  return day.segments.find(seg => n >= seg.start && n <= seg.end);
+}
+function statusFor(dateStr, periodNo){
+  const {now, date} = todayInfo();
+  const compare = compareDate(dateStr, date);
+  if(compare < 0) return 'done';
+  if(compare > 0) return 'pending';
+
+  const p = DATA.periods[periodNo-1];
+  const [eh, em] = p.end.split(':').map(Number);
+  const end = new Date(now);
+  end.setHours(eh, em, 0, 0);
+  return now >= end ? 'done' : 'pending';
+}
+function buildHead(){
+  const tr = document.getElementById('theadRow');
+  DATA.periods.forEach(p => {
+    const th = document.createElement('th');
+    th.innerHTML = `第${p.n}節<br><span style="font-size:14px;color:#64748b;font-weight:600">${p.start}–${p.end}</span>`;
+    tr.appendChild(th);
+  });
+}
+function buildSchedule(){
+  const body = document.getElementById('scheduleBody');
+  const mobile = document.getElementById('mobileList');
+  body.innerHTML = '';
+  mobile.innerHTML = '';
+
+  const {date: today} = todayInfo();
+  let focusDesktop = null;
+  let focusMobile = null;
+  let nearestDesktop = null;
+  let nearestMobile = null;
+  let nearestDiff = Number.POSITIVE_INFINITY;
+
+  DATA.schedule.forEach(day => {
+    const tr = document.createElement('tr');
+    tr.dataset.date = day.date;
+    if(day.date === today) tr.classList.add('today-row');
+
+    const tdDate = document.createElement('td');
+    tdDate.className = 'date-cell';
+    tdDate.innerHTML = `<div class="date-main">${formatROC(day.date)}</div><div class="date-sub">${formatWeek(day.date)}</div>`;
+    tr.appendChild(tdDate);
+
+    const usedPeriods = new Set();
+    day.segments.forEach(seg=>{
+      for(let i=seg.start;i<=seg.end;i++) usedPeriods.add(i);
+    });
+
+    DATA.periods.forEach(p=>{
+      const td = document.createElement('td');
+      const seg = segmentFor(day, p.n);
+      if(seg){
+        const c = DATA.courses[seg.course];
+        const status = statusFor(day.date, p.n);
+        td.innerHTML = `<div class="course-card ${status==='done'?'done':''}">
+          <div class="course-name">${c.name}</div>
+          <div class="course-meta">教師：${c.teacher}</div>
+        </div>`;
+      }else{
+        td.innerHTML = `<div class="empty">無課</div>`;
+      }
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+
+    const card = document.createElement('div');
+    card.className = 'day-card' + (day.date === today ? ' today-card' : '');
+    card.dataset.date = day.date;
+    const emptyPeriods = DATA.periods.filter(p => !usedPeriods.has(p.n)).map(p => `第${p.n}節`);
+    card.innerHTML = `<div class="day-head">
+      <div>
+        <div class="day-title">${formatROC(day.date)}</div>
+        <div class="day-sub">${formatWeek(day.date)}</div>
+      </div>
+      <div class="pill">${day.date===today?'今天':'上課日'}</div>
+    </div>`;
+    day.segments.forEach(seg=>{
+      const c = DATA.courses[seg.course];
+      const status = statusFor(day.date, seg.end);
+      const block = document.createElement('div');
+      block.className = 'seg ' + (status==='done' ? 'done':'');
+      block.innerHTML = `<div class="seg-title">${c.name}</div>
+        <div class="seg-meta">第${seg.start}${seg.start!==seg.end ? '～'+seg.end : ''}節｜${periodRangeText(seg.start, seg.end)}<br>教師：${c.teacher}</div>`;
+      card.appendChild(block);
+    });
+    if(emptyPeriods.length){
+      const extra = document.createElement('div');
+      extra.className = 'empty-note';
+      extra.textContent = `空堂：${emptyPeriods.join('、')}`;
+      card.appendChild(extra);
+    }
+    mobile.appendChild(card);
+
+    const diff = Math.abs(new Date(day.date+'T00:00:00') - new Date(today+'T00:00:00'));
+    if(day.date === today){
+      focusDesktop = tr;
+      focusMobile = card;
+    }else if(diff < nearestDiff){
+      nearestDiff = diff;
+      nearestDesktop = tr;
+      nearestMobile = card;
+    }
+  });
+
+  const desktopTarget = focusDesktop || nearestDesktop;
+  const mobileTarget = focusMobile || nearestMobile;
+  setTimeout(()=>{
+    if(window.innerWidth <= 960){
+      if(mobileTarget) mobileTarget.scrollIntoView({behavior:'smooth', block:'start'});
+    }else{
+      const wrap = document.getElementById('desktopWrap');
+      if(desktopTarget && wrap){
+        const top = desktopTarget.offsetTop - 90;
+        wrap.scrollTo({top: top > 0 ? top : 0, behavior:'smooth'});
+      }
+    }
+  }, 120);
+}
+function weekdayCount(startStr, endStr){
+  let count = 0;
+  const start = new Date(startStr+'T00:00:00');
+  const end = new Date(endStr+'T00:00:00');
+  for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+    const day = d.getDay();
+    if(day >= 1 && day <= 5) count++;
+  }
+  return count;
+}
+function buildStats(){
+  const totalWeekdays = weekdayCount(DATA.range.start, DATA.range.end);
+  const classDays = DATA.schedule.length;
+  const freeDays = DATA.freeDates.length;
+  let totalPeriods = 0;
+  DATA.schedule.forEach(day => day.segments.forEach(seg => totalPeriods += seg.end - seg.start + 1));
+
+  const stats = [
+    {num: totalWeekdays, label: '區間內平日'},
+    {num: classDays, label: '有課平日'},
+    {num: freeDays, label: '整天無課平日'},
+    {num: totalPeriods, label: '總上課節數'},
+  ];
+
+  const wrap = document.getElementById('statsWrap');
+  wrap.innerHTML = stats.map(s => `<div class="stat"><div class="num">${s.num}</div><div class="label">${s.label}</div></div>`).join('');
+
+  const list = document.getElementById('freeList');
+  list.innerHTML = '';
+  DATA.freeDates.forEach(d=>{
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = `<strong>${formatROC(d)}（${formatWeek(d).replace('星期','週')}）</strong><span>09:10–17:00 無課</span>`;
+    list.appendChild(row);
+  });
+}
+function bindTabs(){
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.page).classList.add('active');
+      if(btn.dataset.page === 'schedulePage'){
+        buildSchedule();
+      }
+    });
+  });
+}
+buildHead();
+buildSchedule();
+buildStats();
+bindTabs();
+window.addEventListener('resize', ()=>{
+  clearTimeout(window.__rszTimer);
+  window.__rszTimer = setTimeout(buildSchedule, 150);
+});
+</script>
+</body>
+</html>
