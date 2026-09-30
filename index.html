@@ -275,6 +275,114 @@ tr.today-row .empty{
   .assistant-line{font-size:16px}
 }
 
+
+/* 每次開啟網頁時顯示：今日 / 明日上課狀態 */
+.daily-modal{
+  position:fixed;
+  inset:0;
+  z-index:20000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(15,23,42,.48);
+  backdrop-filter:blur(3px);
+}
+.daily-modal.show{display:flex}
+.daily-modal-card{
+  width:min(560px,100%);
+  max-height:88vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:22px;
+  box-shadow:0 24px 70px rgba(15,23,42,.28);
+  border:1px solid #e5e7eb;
+}
+.daily-modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:18px 20px 12px;
+}
+.daily-modal-title{
+  margin:0;
+  font-size:23px;
+  font-weight:950;
+}
+.daily-close{
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:50%;
+  background:#f1f5f9;
+  color:#475569;
+  font-size:22px;
+  cursor:pointer;
+  font-weight:900;
+}
+.daily-modal-body{padding:4px 20px 20px}
+.status-card{
+  border-radius:16px;
+  padding:15px 16px;
+  margin-top:12px;
+  border:1px solid;
+}
+.status-card.class-day{
+  background:#eaf8ed;
+  border-color:#b6dfbd;
+}
+.status-card.no-class{
+  background:#fff8d6;
+  border-color:#ead47b;
+}
+.status-date{
+  font-size:15px;
+  font-weight:850;
+  color:#64748b;
+}
+.status-main{
+  margin-top:5px;
+  font-size:21px;
+  line-height:1.35;
+  font-weight:950;
+}
+.status-detail{
+  margin-top:8px;
+  font-size:15px;
+  line-height:1.6;
+  color:#475569;
+  font-weight:700;
+}
+.next-class{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid rgba(120,113,108,.18);
+  font-size:15px;
+  line-height:1.55;
+  font-weight:800;
+}
+.daily-ok{
+  width:100%;
+  border:0;
+  border-radius:14px;
+  margin-top:16px;
+  padding:13px 16px;
+  background:#2563eb;
+  color:#fff;
+  font-size:17px;
+  font-weight:900;
+  cursor:pointer;
+}
+@media(max-width:520px){
+  .daily-modal{padding:12px}
+  .daily-modal-title{font-size:21px}
+  .status-main{font-size:19px}
+  .status-detail,.next-class{font-size:14px}
+}
+
 </style>
 </head>
 <body>
@@ -317,6 +425,21 @@ tr.today-row .empty{
 <div class="floating-actions" id="floatingActions">
   <button class="float-btn today-btn" id="todayCourseBtn" type="button" aria-label="快速移到今天課程">今天<br>課程</button>
   <button class="float-btn switch-btn" id="switchPageBtn" type="button" aria-label="切換空課">切換<br>空課</button>
+</div>
+
+
+<div class="daily-modal" id="dailyStatusModal" role="dialog" aria-modal="true" aria-labelledby="dailyStatusTitle">
+  <div class="daily-modal-card">
+    <div class="daily-modal-head">
+      <h2 class="daily-modal-title" id="dailyStatusTitle">上課提醒</h2>
+      <button class="daily-close" id="dailyStatusClose" type="button" aria-label="關閉">×</button>
+    </div>
+    <div class="daily-modal-body">
+      <div id="todayStatusCard"></div>
+      <div id="tomorrowStatusCard"></div>
+      <button class="daily-ok" id="dailyStatusOk" type="button">我知道了</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -491,6 +614,100 @@ function buildStats(){
   renderPastList('pastFreeList', pastItems);
 }
 buildHead();buildStats();build();
+
+function isoLocalDate(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function classSummary(dateStr){
+  const day=MAP.get(dateStr);
+  if(!day) return null;
+
+  let firstPeriod=8;
+  let lastPeriod=0;
+  const courseNames=[];
+
+  day.segments.forEach(seg=>{
+    firstPeriod=Math.min(firstPeriod,seg.start);
+    lastPeriod=Math.max(lastPeriod,seg.end);
+    const c=DATA.courses[seg.course];
+    if(c && !courseNames.includes(c.name)) courseNames.push(c.name);
+  });
+
+  return {
+    date:dateStr,
+    start:DATA.periods[firstPeriod-1].start,
+    end:DATA.periods[lastPeriod-1].end,
+    courses:courseNames
+  };
+}
+
+function nextClassAfter(dateStr){
+  return DATA.schedule
+    .filter(x=>x.date>dateStr)
+    .sort((a,b)=>a.date.localeCompare(b.date))[0] || null;
+}
+
+function statusCardHtml(dateStr,label){
+  const summary=classSummary(dateStr);
+  const dateText=`${roc(dateStr)}（${week(dateStr)}）`;
+
+  if(summary){
+    return `<div class="status-card class-day">
+      <div class="status-date">${label}｜${dateText}</div>
+      <div class="status-main">${label==='今日'?'今日需上課':'明日需上課'}</div>
+      <div class="status-detail">
+        上課時間：${summary.start}–${summary.end}<br>
+        課程：${summary.courses.join('、')}
+      </div>
+    </div>`;
+  }
+
+  let nextHtml='';
+  if(label==='今日'){
+    const next=nextClassAfter(dateStr);
+    if(next){
+      const nextSummary=classSummary(next.date);
+      nextHtml=`<div class="next-class">下次上課：${roc(next.date)}（${week(next.date)}）${nextSummary?` ${nextSummary.start}–${nextSummary.end}<br>${nextSummary.courses.join('、')}`:''}</div>`;
+    }else{
+      nextHtml='<div class="next-class">目前已沒有後續排定課程。</div>';
+    }
+  }
+
+  return `<div class="status-card no-class">
+    <div class="status-date">${label}｜${dateText}</div>
+    <div class="status-main">${label==='今日'?'今日無課':'明日無課'}</div>
+    ${nextHtml}
+  </div>`;
+}
+
+function showDailyStatusModal(){
+  const now=new Date();
+  const today=isoLocalDate(now);
+  const tomorrowDate=new Date(now);
+  tomorrowDate.setDate(tomorrowDate.getDate()+1);
+  const tomorrow=isoLocalDate(tomorrowDate);
+
+  document.getElementById('todayStatusCard').innerHTML=statusCardHtml(today,'今日');
+  document.getElementById('tomorrowStatusCard').innerHTML=statusCardHtml(tomorrow,'明日');
+
+  const modal=document.getElementById('dailyStatusModal');
+  modal.classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function closeDailyStatusModal(){
+  document.getElementById('dailyStatusModal').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+document.getElementById('dailyStatusClose').addEventListener('click',closeDailyStatusModal);
+document.getElementById('dailyStatusOk').addEventListener('click',closeDailyStatusModal);
+document.getElementById('dailyStatusModal').addEventListener('click',(e)=>{
+  if(e.target.id==='dailyStatusModal') closeDailyStatusModal();
+});
+
+showDailyStatusModal();
 
 function focusTodayCourse(){
   const {date:today}=info();
