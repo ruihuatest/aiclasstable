@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>115年響應式課表</title>
+<style>
+:root{
+ --bg:#f5f7f5;--card:#fff;--line:#e1e7e1;--text:#1f2937;--muted:#6b7280;
+ --green:#e3f5e6;--green-b:#abd9b3;--gray:#eceff1;--gray-b:#d0d6dc;
+ --today:#dff2e2;--blue:#2563eb;--shadow:0 5px 20px rgba(15,23,42,.055)
+}
+*{box-sizing:border-box}html{scroll-behavior:auto}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.app{max-width:1500px;margin:auto;padding:14px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:#eef2ee;color:#667085;border-radius:18px;padding:15px 12px;font-size:clamp(18px,2vw,24px);font-weight:900;cursor:pointer}
+.tab.active{background:#fff;color:var(--blue);box-shadow:var(--shadow)}
+.page{display:none}.page.active{display:block}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:0 2px 10px}
+.today-label{font-size:15px;font-weight:850}
+.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.legend span{display:flex;align-items:center;gap:6px}.dot{width:12px;height:12px;border-radius:4px;border:1px solid}
+.dot.g{background:var(--green);border-color:var(--green-b)}.dot.x{background:var(--gray);border-color:var(--gray-b)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.table-wrap{overflow:auto;max-height:calc(100vh - 135px)}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:1220px}
+th{position:sticky;top:0;z-index:3;background:#fafbfa;padding:13px;text-align:left;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:15px}
+td{padding:12px;vertical-align:top;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff}
+th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}
+tr.today-row td{background:var(--today)}
+.date-cell{width:145px;min-width:145px}.date-main{font-size:17px;font-weight:900}.date-sub{font-size:13px;color:var(--muted);margin-top:5px}
+.makeup{display:inline-block;margin-top:7px;padding:4px 8px;border-radius:999px;background:#fff2c7;color:#755400;font-size:11px;font-weight:850}
+.course{min-height:96px;border-radius:14px;padding:12px;background:var(--green);border:1px solid var(--green-b)}
+.course.done{background:var(--gray);border-color:var(--gray-b)}
+.name{font-size:16px;font-weight:900;line-height:1.35}.meta{margin-top:8px;font-size:13px;color:#52606d;line-height:1.55}
+.empty{min-height:96px;border-radius:14px;border:1px dashed #d6ddd6;background:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:14px}
+.mobile{display:none}.day{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin-bottom:10px}.day.today{background:var(--today)}
+.day-head{display:flex;justify-content:space-between;gap:10px}.day-title{font-size:19px;font-weight:900}.badge{height:max-content;padding:5px 9px;border-radius:999px;background:#eef2ff;color:#3157d5;font-size:12px;font-weight:850;white-space:nowrap}
+.m-course{margin-top:10px;border-radius:14px;padding:12px;background:var(--green);border:1px solid var(--green-b)}.m-course.done{background:var(--gray);border-color:var(--gray-b)}
+.free{margin-top:10px;padding:18px;text-align:center;border-radius:14px;border:1px dashed #cfd7cf;background:rgba(255,255,255,.7);color:#667085;font-weight:850}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.stat,.block{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.stat{padding:16px}.stat .num{font-size:30px;font-weight:950}.stat .lab{margin-top:4px;color:var(--muted);font-size:13px}
+.block{padding:16px}.block h2{margin:0 0 10px;font-size:19px}.notice{background:#f8faf8;border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-bottom:9px;font-size:14px;color:#4b5563;line-height:1.55}
+.row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}.row strong{font-size:15px}.row span{font-size:13px;color:var(--muted);text-align:right}
+@media(max-width:920px){.app{padding:10px}.table-wrap{display:none}.mobile{display:block}.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.tab{font-size:19px;padding:13px 8px}.stat{padding:13px}.stat .num{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="tabs">
+ <button class="tab active" data-page="schedulePage">課表</button>
+ <button class="tab" data-page="statsPage">平日空檔統計</button>
+</nav>
+
+<section id="schedulePage" class="page active">
+ <div class="topline">
+  <div id="todayLabel" class="today-label"></div>
+  <div class="legend"><span><i class="dot g"></i>未完成</span><span><i class="dot x"></i>已完成</span></div>
+ </div>
+ <div class="panel table-wrap" id="desktopWrap">
+  <table><thead><tr id="head"><th>日期</th></tr></thead><tbody id="body"></tbody></table>
+ </div>
+ <div class="mobile" id="mobile"></div>
+</section>
+
+<section id="statsPage" class="page">
+ <div class="stats" id="stats"></div>
+ <div class="block">
+  <h2>平日不用上課</h2>
+  <div class="notice"><strong>補課異動：</strong>115/09/18 原定「資通訊科技與資訊安全導論」移至 115/11/02 補課。115/09/24 維持原課程「新媒體社群經營與短影音概論」，沒有異動。</div>
+  <div id="freeList"></div>
+  <div class="row"><strong>115/09/14（一）</strong><span>第5～7節無課，14:00 後不用上課</span></div>
+ </div>
+</section>
+</div>
+
+<script>
+const DATA={"periods": [{"n": 1, "start": "09:10", "end": "10:00"}, {"n": 2, "start": "10:10", "end": "11:00"}, {"n": 3, "start": "11:10", "end": "12:00"}, {"n": 4, "start": "13:10", "end": "14:00"}, {"n": 5, "start": "14:10", "end": "15:00"}, {"n": 6, "start": "15:10", "end": "16:00"}, {"n": 7, "start": "16:10", "end": "17:00"}], "courses": {"gender": {"name": "性別平等工作法", "teacher": "蔡松萍"}, "admin": {"name": "行政宣導與教務管理", "teacher": "周瑋"}, "infosec": {"name": "資通訊科技與資訊安全導論", "teacher": "梁芸姬"}, "ethics": {"name": "職業道德與職場工作倫理", "teacher": "鄭惠文"}, "job": {"name": "就業市場趨勢分析與求職技巧", "teacher": "鄭惠文"}, "social": {"name": "新媒體社群經營與短影音概論", "teacher": "林子筠"}, "digital": {"name": "數位轉型與AI商務應用概論", "teacher": "江美燕"}, "genai": {"name": "生成式AI運算思維與邏輯", "teacher": "周昌煥"}, "labor": {"name": "勞動法令", "teacher": "周瑋"}, "aippt": {"name": "AI智能簡報設計商務演練", "teacher": "江美燕", "assistant": "施則安"}, "multi": {"name": "AI多模態媒體生成工具應用實務", "teacher": "周昌煥"}, "office": {"name": "商務文書處理與數據分析實務", "teacher": "梁芸姬", "assistant": "施則安"}, "video": {"name": "短影音拍攝剪輯與線上行銷實作", "teacher": "林子筠", "assistant": "施則安"}}, "schedule": [{"date": "2026-09-14", "segments": [{"course": "gender", "start": 1, "end": 3}, {"course": "admin", "start": 4, "end": 4}]}, {"date": "2026-09-15", "segments": [{"course": "infosec", "start": 1, "end": 7}]}, {"date": "2026-09-16", "segments": [{"course": "ethics", "start": 1, "end": 3}, {"course": "job", "start": 4, "end": 7}]}, {"date": "2026-09-17", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-21", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-22", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-23", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-24", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-09-29", "segments": [{"course": "digital", "start": 1, "end": 7}]}, {"date": "2026-09-30", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-01", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-02", "segments": [{"course": "labor", "start": 1, "end": 7}]}, {"date": "2026-10-05", "segments": [{"course": "genai", "start": 1, "end": 7}]}, {"date": "2026-10-06", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-07", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-08", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-09", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-12", "segments": [{"course": "social", "start": 1, "end": 7}]}, {"date": "2026-10-13", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-14", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-15", "segments": [{"course": "multi", "start": 1, "end": 7}]}, {"date": "2026-10-19", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-20", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-21", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-23", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-27", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-10-28", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-10-29", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-10-30", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-02", "segments": [{"course": "infosec", "start": 1, "end": 7}], "makeup_from": "2026-09-18"}, {"date": "2026-11-03", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-04", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-05", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-06", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-10", "segments": [{"course": "aippt", "start": 1, "end": 7}]}, {"date": "2026-11-11", "segments": [{"course": "multi", "start": 1, "end": 7, "assistant_override": "施則安"}]}, {"date": "2026-11-12", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-13", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-17", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-18", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-19", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-20", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-23", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-24", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-25", "segments": [{"course": "office", "start": 1, "end": 7}]}, {"date": "2026-11-26", "segments": [{"course": "video", "start": 1, "end": 7}]}, {"date": "2026-11-27", "segments": [{"course": "video", "start": 1, "end": 7}]}], "weekdays": ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-23", "2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27"], "freeDates": ["2026-09-18", "2026-09-25", "2026-09-28", "2026-10-16", "2026-10-22", "2026-10-26", "2026-11-09", "2026-11-16"], "range": {"start": "2026-09-14", "end": "2026-11-27"}, "verification": {"sourceImages": 9, "sourceClassDays": 47, "finalClassDays": 47, "weekdays": 55, "freeDays": 8, "totalPeriods": 326, "movedFrom": "2026-09-18", "movedTo": "2026-11-02"}};
+const DAY=['日','一','二','三','四','五','六'];
+const MAP=new Map(DATA.schedule.map(x=>[x.date,x]));
+
+function info(){
+ const n=new Date();
+ return {now:n,date:`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`};
+}
+function roc(s){const d=new Date(s+'T00:00:00');return `${d.getFullYear()-1911}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`}
+function week(s){return `星期${DAY[new Date(s+'T00:00:00').getDay()]}`}
+function segAt(day,p){return day?.segments.find(s=>p>=s.start&&p<=s.end)||null}
+function assist(seg,c){return Object.prototype.hasOwnProperty.call(seg||{},'assistant_override')?seg.assistant_override:(c.assistant||'')}
+function status(date,p){
+ const {now,date:today}=info();
+ if(date<today)return'done'; if(date>today)return'pending';
+ const [h,m]=DATA.periods[p-1].end.split(':').map(Number);
+ const e=new Date(now);e.setHours(h,m,0,0);
+ return now>=e?'done':'pending';
+}
+function buildHead(){
+ DATA.periods.forEach(p=>{
+  const th=document.createElement('th');
+  th.innerHTML=`第${p.n}節<br><span style="font-size:13px;color:#64748b;font-weight:600">${p.start}–${p.end}</span>`;
+  document.getElementById('head').appendChild(th);
+ })
+}
+function build(){
+ const {date:today}=info();
+ document.getElementById('todayLabel').textContent=`今天：${roc(today)}（${week(today)}）`;
+ const body=document.getElementById('body'),mobile=document.getElementById('mobile');
+ body.innerHTML='';mobile.innerHTML='';
+ let exactD=null,exactM=null,nextD=null,nextM=null;
+
+ DATA.weekdays.forEach(ds=>{
+  const day=MAP.get(ds)||null;
+  const tr=document.createElement('tr'); tr.dataset.date=ds;
+  if(ds===today)tr.classList.add('today-row');
+
+  let mk=day?.makeup_from?`<div class="makeup">補課｜原 ${roc(day.makeup_from)}</div>`:'';
+  const td0=document.createElement('td');td0.className='date-cell';
+  td0.innerHTML=`<div class="date-main">${roc(ds)}</div><div class="date-sub">${week(ds)}</div>${mk}`;
+  tr.appendChild(td0);
+
+  DATA.periods.forEach(p=>{
+   const td=document.createElement('td'),seg=segAt(day,p.n);
+   if(seg){
+    const c=DATA.courses[seg.course],a=assist(seg,c);
+    td.innerHTML=`<div class="course ${status(ds,p.n)==='done'?'done':''}"><div class="name">${c.name}</div><div class="meta">教師：${c.teacher}${a?`<br>助教：${a}`:''}</div></div>`;
+   }else td.innerHTML='<div class="empty">無課</div>';
+   tr.appendChild(td);
+  });
+  body.appendChild(tr);
+
+  const card=document.createElement('article');card.className='day'+(ds===today?' today':'');card.dataset.date=ds;
+  card.innerHTML=`<div class="day-head"><div><div class="day-title">${roc(ds)}</div><div class="date-sub">${week(ds)}</div></div><span class="badge">${ds===today?'今天・':''}${day?(day.makeup_from?'補課':'上課日'):'無課'}</span></div>`;
+  if(day){
+   if(day.makeup_from){
+    const n=document.createElement('div');n.className='makeup';n.textContent=`原 ${roc(day.makeup_from)} 課程移至本日`;card.appendChild(n)
+   }
+   day.segments.forEach(seg=>{
+    const c=DATA.courses[seg.course],a=assist(seg,c),b=document.createElement('div');
+    b.className='m-course '+(status(ds,seg.end)==='done'?'done':'');
+    b.innerHTML=`<div class="name">${c.name}</div><div class="meta">第${seg.start}${seg.start!==seg.end?'～'+seg.end:''}節｜${DATA.periods[seg.start-1].start}–${DATA.periods[seg.end-1].end}<br>教師：${c.teacher}${a?`<br>助教：${a}`:''}</div>`;
+    card.appendChild(b)
+   })
+  }else{
+   const f=document.createElement('div');f.className='free';f.textContent='全天無課';card.appendChild(f)
+  }
+  mobile.appendChild(card);
+
+  if(ds===today){exactD=tr;exactM=card}
+  if(!nextD&&ds>today){nextD=tr;nextM=card}
+ });
+
+ const dTarget=exactD||nextD||body.lastElementChild,mTarget=exactM||nextM||mobile.lastElementChild;
+ setTimeout(()=>{
+  if(window.innerWidth<=920)mTarget?.scrollIntoView({block:'start',behavior:'auto'});
+  else if(dTarget){const w=document.getElementById('desktopWrap');w.scrollTop=Math.max(0,dTarget.offsetTop-65)}
+ },40);
+}
+function buildStats(){
+ const v=DATA.verification;
+ const items=[[v.weekdays,'區間內平日'],[v.finalClassDays,'有課平日'],[v.freeDays,'整天無課平日'],[v.totalPeriods,'總上課節數']];
+ document.getElementById('stats').innerHTML=items.map(x=>`<div class="stat"><div class="num">${x[0]}</div><div class="lab">${x[1]}</div></div>`).join('');
+ document.getElementById('freeList').innerHTML=DATA.freeDates.map(s=>{
+   const text=s==='2026-09-18'?'原課程已移至 11/02 補課':'09:10–17:00 無課';
+   return `<div class="row"><strong>${roc(s)}（${week(s).replace('星期','週')}）</strong><span>${text}</span></div>`
+ }).join('')
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');document.getElementById(b.dataset.page).classList.add('active');
+ if(b.dataset.page==='schedulePage')build()
+});
+buildHead();buildStats();build();
+</script>
+</body>
+</html>
