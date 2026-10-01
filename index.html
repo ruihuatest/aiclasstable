@@ -392,6 +392,25 @@ tr.today-row .empty{
   color:#7a5600;
 }
 
+
+.status-course{
+  margin-top:10px;
+  font-size:19px;
+  line-height:1.5;
+  font-weight:950;
+  color:#1f2937;
+}
+.status-teacher{
+  margin-top:7px;
+  font-size:19px;
+  line-height:1.5;
+  font-weight:950;
+  color:#1f2937;
+}
+@media(max-width:520px){
+  .status-course,.status-teacher{font-size:18px}
+}
+
 </style>
 </head>
 <body>
@@ -635,19 +654,24 @@ function classSummary(dateStr){
   let firstPeriod=8;
   let lastPeriod=0;
   const courseNames=[];
+  const teacherNames=[];
 
   day.segments.forEach(seg=>{
     firstPeriod=Math.min(firstPeriod,seg.start);
     lastPeriod=Math.max(lastPeriod,seg.end);
     const c=DATA.courses[seg.course];
-    if(c && !courseNames.includes(c.name)) courseNames.push(c.name);
+    if(c){
+      if(!courseNames.includes(c.name)) courseNames.push(c.name);
+      if(c.teacher && !teacherNames.includes(c.teacher)) teacherNames.push(c.teacher);
+    }
   });
 
   return {
     date:dateStr,
     start:DATA.periods[firstPeriod-1].start,
     end:DATA.periods[lastPeriod-1].end,
-    courses:courseNames
+    courses:courseNames,
+    teachers:teacherNames
   };
 }
 
@@ -665,10 +689,9 @@ function statusCardHtml(dateStr,label){
     return `<div class="status-card class-day ${label==='今日'?'today-class':''}">
       <div class="status-date">${label}｜${dateText}</div>
       <div class="status-main">${label==='今日'?'今日需上課':'明日需上課'}</div>
-      <div class="status-detail">
-        上課時間：${summary.start}–${summary.end}<br>
-        課程：${summary.courses.join('、')}
-      </div>
+      <div class="status-detail">上課時間：${summary.start}–${summary.end}</div>
+      <div class="status-course">課程：${summary.courses.join('、')}</div>
+      <div class="status-teacher">老師：${summary.teachers.join('、')}</div>
     </div>`;
   }
 
@@ -677,7 +700,7 @@ function statusCardHtml(dateStr,label){
     const next=nextClassAfter(dateStr);
     if(next){
       const nextSummary=classSummary(next.date);
-      nextHtml=`<div class="next-class">下次上課：${roc(next.date)}（${week(next.date)}）${nextSummary?` ${nextSummary.start}–${nextSummary.end}<br>${nextSummary.courses.join('、')}`:''}</div>`;
+      nextHtml=`<div class="next-class">下次上課：${roc(next.date)}（${week(next.date)}）${nextSummary?` ${nextSummary.start}–${nextSummary.end}<br>課程：${nextSummary.courses.join('、')}<br>老師：${nextSummary.teachers.join('、')}`:''}</div>`;
     }else{
       nextHtml='<div class="next-class">目前已沒有後續排定課程。</div>';
     }
